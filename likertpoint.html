@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AJT尺度比較</title>
+  <style>
+    body {
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      background: #f5f7fb;
+      margin: 0;
+      padding: 40px;
+      color: #222;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: auto;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      color: #1f2937;
+    }
+
+    .subtitle {
+      color: #4b5563;
+      margin-bottom: 30px;
+      line-height: 1.7;
+    }
+
+    .button-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    button {
+      border: none;
+      padding: 12px 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+      background: #dbe4f0;
+      color: #1f2937;
+      font-weight: 600;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    button.active {
+      background: #2563eb;
+      color: white;
+      box-shadow: 0 4px 14px rgba(37,99,235,0.25);
+    }
+
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 28px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      margin-top: 20px;
+    }
+
+    .scale-title {
+      font-size: 1.5rem;
+      margin-bottom: 6px;
+      color: #111827;
+    }
+
+    .scale-summary {
+      color: #4b5563;
+      margin-bottom: 24px;
+      line-height: 1.7;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .section {
+      border-radius: 16px;
+      padding: 20px;
+    }
+
+    .merit {
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+    }
+
+    .demerit {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+    }
+
+    .section h3 {
+      margin-top: 0;
+      font-size: 1.1rem;
+    }
+
+    ul {
+      padding-left: 20px;
+      line-height: 1.8;
+    }
+
+    li {
+      margin-bottom: 10px;
+    }
+
+    .source {
+      margin-top: 10px;
+      font-size: 0.85rem;
+      color: #6b7280;
+      border-top: 1px dashed #cbd5e1;
+      padding-top: 10px;
+    }
+
+    .footer-note {
+      margin-top: 30px;
+      padding: 18px;
+      border-radius: 14px;
+      background: #eff6ff;
+      color: #1e3a8a;
+      line-height: 1.8;
+      border: 1px solid #bfdbfe;
+    }
+
+    @media (max-width: 800px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      body {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>AJT尺度比較インターフェース</h1>
+    <p class="subtitle">
+      容認性判断課題（AJT）で用いられる5・7・11段階尺度について、
+      「教科書ベース」と「Yamashita (2026) ベース」の観点を切り替えながら比較できるインタラクティブ表示。
+    </p>
+
+    <div class="button-group" id="scaleButtons">
+      <button class="active" onclick="setScale('5')">5段階</button>
+      <button onclick="setScale('7')">7段階</button>
+      <button onclick="setScale('11')">11段階</button>
+    </div>
+
+    <div class="button-group" id="sourceButtons">
+      <button class="active" onclick="setSource('textbook')">教科書ベース</button>
+      <button onclick="setSource('yamashita')">Yamashita (2026) ベース</button>
+    </div>
+
+    <div class="card">
+      <div class="scale-title" id="title"></div>
+      <div class="scale-summary" id="summary"></div>
+
+      <div class="grid">
+        <div class="section merit">
+          <h3>メリット</h3>
+          <ul id="merits"></ul>
+        </div>
+
+        <div class="section demerit">
+          <h3>デメリット</h3>
+          <ul id="demerits"></ul>
+        </div>
+      </div>
+
+      <div class="source" id="source"></div>
+
+      </div>
+  </div>
+
+  <script>
+    const data = {
+      "5": {
+        textbook: {
+          title: "5段階尺度（教科書ベース）",
+          summary: "認知負荷を抑えながら、安定した判断を得やすい実践的尺度。",
+          merits: [
+            "判断が速く、回答疲労が少ない",
+            "参加者間で尺度使用が比較的揃いやすい",
+            "カテゴリが適度にまとまり、統計モデルが安定しやすい",
+            "AJTの長時間課題と相性が良い"
+          ],
+          demerits: [
+            "微妙な容認性差を捉えにくい",
+            "天井効果・床効果が生じやすい",
+            "分散が小さくなる可能性がある"
+          ],
+          source: "出典：添付『教科書』画像"
+        },
+        yamashita: {
+          title: "5段階尺度（Yamashita ベース）",
+          summary: "『実際に人が区別可能なカテゴリ数』に近い可能性がある。",
+          merits: [
+            "中間カテゴリの混同が起きにくい",
+            "認知負荷が比較的小さい",
+            "カテゴリ間の意味差が安定しやすい",
+            "score category collapsing の結果とも整合的"
+          ],
+          demerits: [
+            "subtle な差異の検出には限界がある",
+            "高度なgradient acceptability研究では粗すぎる可能性"
+          ],
+          source: "出典：Yamashita (2026), score category collapsing 議論"
+        }
+      },
+
+      "7": {
+        textbook: {
+          title: "7段階尺度（教科書ベース）",
+          summary: "感度と安定性のバランス型尺度。",
+          merits: [
+            "5段階より細かな差を表現可能",
+            "分散を確保しやすい",
+            "SLA研究で広く採用されている"
+          ],
+          demerits: [
+            "参加者によって尺度使用がずれやすい",
+            "中間カテゴリの解釈が曖昧になりやすい",
+            "認知負荷がやや増える"
+          ],
+          source: "出典：教科書画像 + SLA研究慣行"
+        },
+        yamashita: {
+          title: "7段階尺度（Yamashita ベース）",
+          summary: "『細かさ』と『実際の区別可能性』の境界線上にある尺度。",
+          merits: [
+            "5段階より nuanced な判断を可能にする",
+            "上級学習者研究と相性が良い",
+            "gradient acceptability を扱いやすい"
+          ],
+          demerits: [
+            "中間カテゴリが実質的に同じ意味で使われる可能性",
+            "参加者間の尺度戦略差が増える",
+            "実質的には5段階程度しか機能していない場合がある"
+          ],
+          source: "出典：Yamashita (2026), 中間カテゴリ混同の議論"
+        }
+      },
+
+      "11": {
+        textbook: {
+          title: "11段階尺度（教科書ベース）",
+          summary: "統計的感度と分布の滑らかさを重視する尺度。",
+          merits: [
+            "分散が大きくなりやすい",
+            "正規分布に近づきやすい",
+            "外れ値が減少しやすい",
+            "感度向上が期待できる"
+          ],
+          demerits: [
+            "判断に時間がかかる",
+            "疲労によるノイズが増える",
+            "尺度使用の個人差が大きくなる"
+          ],
+          source: "出典：添付『教科書』画像"
+        },
+        yamashita: {
+          title: "11段階尺度（Yamashita ベース）",
+          summary: "『理論上は高解像度』だが、『実際の運用』には強い疑問が残る尺度。",
+          merits: [
+            "理論上は微細な差異を表現可能",
+            "連続量的に扱いやすく見える"
+          ],
+          demerits: [
+            "参加者が細かく区別していない可能性が高い",
+            "隣接カテゴリが実質的に同義になる危険",
+            "認知負荷が高い",
+            "slider操作や偶然的反応の影響を受けやすい",
+            "『擬似連続量』として扱ってしまう危険"
+          ],
+          source: "出典：Yamashita (2026), 100-point scale 批判"
+        }
+      }
+    };
+
+    let currentScale = '5';
+    let currentSource = 'textbook';
+
+    function render() {
+      const content = data[currentScale][currentSource];
+
+      document.getElementById('title').textContent = content.title;
+      document.getElementById('summary').textContent = content.summary;
+      document.getElementById('source').textContent = content.source;
+
+      const merits = document.getElementById('merits');
+      merits.innerHTML = '';
+      content.merits.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = item;
+        merits.appendChild(li);
+      });
+
+      const demerits = document.getElementById('demerits');
+      demerits.innerHTML = '';
+      content.demerits.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = item;
+        demerits.appendChild(li);
+      });
+    }
+
+    function setScale(scale) {
+      currentScale = scale;
+
+      document.querySelectorAll('#scaleButtons button').forEach(btn => {
+        btn.classList.remove('active');
+      });
+
+      event.target.classList.add('active');
+      render();
+    }
+
+    function setSource(source) {
+      currentSource = source;
+
+      document.querySelectorAll('#sourceButtons button').forEach(btn => {
+        btn.classList.remove('active');
+      });
+
+      event.target.classList.add('active');
+      render();
+    }
+
+    render();
+  </script>
+</body>
+</html>
